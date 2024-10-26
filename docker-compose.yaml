@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:latest
+    container_name: beerrating_db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: beerrating
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - beerrating_network
+  redis:
+    image: redis:latest
+    container_name: beerrating_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - beerrating_network
+
+  app:
+    build: .
+    depends_on:
+      - db
+      - redis
+    environment:
+      SPRING_REDIS_HOST: redis  # Hostname for Redis service in the same Docker network
+      SPRING_REDIS_PORT: 6379
+    ports:
+      - "8080:8080"
+    networks:
+      - beerrating_network
+
+networks:
+  beerrating_network:
+
+volumes:
+  db_data:
